@@ -137,7 +137,7 @@
                 </form>
                 
                 <div id="feedback-message" class="mt-6 p-4 rounded-lg text-center font-semibold min-h-[7rem] flex flex-col items-center justify-center">
-                    <!-- Feedback appears here -->
+                    <div id="practice-feedback-text"></div>
                     <div id="practice-restart-container" class="mt-4 hidden w-full"></div>
                 </div>
             </div>
@@ -163,7 +163,7 @@
                 </div>
                 
                 <div id="mcq-feedback-message" class="mt-6 p-4 rounded-lg text-center font-semibold min-h-[7rem] flex flex-col items-center justify-center">
-                    <!-- Feedback appears here -->
+                    <div id="mcq-feedback-text"></div>
                     <div id="mcq-restart-container" class="mt-4 hidden w-full"></div>
                 </div>
             </div>
@@ -346,6 +346,7 @@
         const answerInput = document.getElementById('answer-input');
         const checkAnswerBtn = document.getElementById('check-answer-btn'); // NEW
         const feedbackMessage = document.getElementById('feedback-message');
+        const practiceFeedbackText = document.getElementById('practice-feedback-text'); // NEW
         const practiceRestartContainer = document.getElementById('practice-restart-container'); // NEW
 
         // Practice (MCQ) Screen
@@ -355,6 +356,7 @@
         const mcqQuestion = document.getElementById('mcq-question');
         const mcqOptionsGrid = document.getElementById('mcq-options-grid');
         const mcqFeedbackMessage = document.getElementById('mcq-feedback-message');
+        const mcqFeedbackText = document.getElementById('mcq-feedback-text'); // NEW
         const mcqRestartContainer = document.getElementById('mcq-restart-container'); // NEW
         
         // Stats Screen
@@ -525,7 +527,7 @@
                 practiceTitle.textContent = titleText;
                 practiceQuestion.innerHTML = questionText;
                 practiceStreak.textContent = `Current Score: ${currentScore}`;
-                feedbackMessage.innerHTML = ''; // Clear feedback
+                practiceFeedbackText.innerHTML = ''; // Clear feedback
                 answerInput.value = '';
                 answerInput.disabled = false;
                 answerInput.focus();
@@ -533,7 +535,7 @@
                 mcqTitle.textContent = titleText;
                 mcqQuestion.innerHTML = questionText;
                 mcqStreak.textContent = `Current Score: ${currentScore}`;
-                mcqFeedbackMessage.innerHTML = '';
+                mcqFeedbackText.innerHTML = '';
                 
                 const options = generateMCQOptions(currentQuestion.answer, currentQuestion.num1);
                 mcqOptionsGrid.innerHTML = ''; // Clear old options
@@ -664,7 +666,7 @@
         }
         
         function showFeedbackAnimation(type, isTimeout = false) {
-            const feedbackTextEl = (currentPractice.mode === 'input') ? feedbackMessage : mcqFeedbackMessage;
+            const feedbackTextEl = (currentPractice.mode === 'input') ? practiceFeedbackText : mcqFeedbackText;
             
             if (type === 'correct') {
                 feedbackFlash.className = 'feedback-flash active bg-green-500/30';
