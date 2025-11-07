@@ -66,6 +66,11 @@
             from { transform: scale(0.8); opacity: 0; }
             to { transform: scale(1); opacity: 1; }
         }
+        /* Timer bar */
+        .timer-bar {
+            @apply h-2.5 bg-indigo-600 rounded-full;
+            transition: width 0.1s linear;
+        }
     </style>
 </head>
 <body class="bg-gray-100 antialiased">
@@ -86,13 +91,12 @@
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                         <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.54-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.95-.69l1.07-3.292z" />
                     </svg>
-                    <span id="points-value">0</span>
+                    <span>Best Score: </span>
+                    <span id="best-score-value">0</span>
                 </div>
             </div>
         </header>
 
-        <!-- ===== PAGE 1: AUTH SCREEN (REMOVED) ===== -->
-        <!-- No longer needed! -->
 
         <!-- ===== PAGE 2: HOME SCREEN (NOW THE DEFAULT) ===== -->
         <div id="home-screen" class="page active p-4 sm:p-6 max-w-lg mx-auto">
@@ -117,14 +121,18 @@
         <!-- ===== PAGE 3: PRACTICE SCREEN (INPUT) ===== -->
         <div id="practice-screen" class="page flex flex-col items-center justify-center p-4 sm:p-8 min-h-[calc(100vh-144px)] max-w-lg mx-auto">
             <div class="bg-white p-6 sm:p-8 rounded-lg shadow-xl w-full max-w-md">
-                <h2 id="practice-title" class="text-2xl sm:text-3xl font-bold text-center text-indigo-600 mb-2">
-                    Table Practice
-                </h2>
-                <p id="practice-streak" class="text-center text-gray-500 mb-6">Current Score: 0</p>
+                <div class="flex justify-between items-center mb-2">
+                    <h2 id="practice-title" class="text-2xl sm:text-3xl font-bold text-indigo-600">
+                        Table Practice
+                    </h2>
+                    <div id="practice-score" class="text-xl font-bold text-gray-700">Score: 0</div>
+                </div>
                 
-                <!-- NEW: Timer -->
-                <div id="practice-timer" class="text-center text-2xl font-bold text-red-600 mb-4 h-8"></div>
-
+                <!-- Timer Bar -->
+                <div class="w-full bg-gray-200 rounded-full h-2.5 my-4">
+                    <div id="practice-timer-bar" class="timer-bar" style="width: 100%"></div>
+                </div>
+                
                 <div id="practice-question" class="text-5xl sm:text-6xl font-bold text-center text-gray-800 my-12 h-20 flex items-center justify-center">
                     <!-- Question appears here -->
                 </div>
@@ -146,14 +154,18 @@
         <!-- ===== PAGE 4: PRACTICE SCREEN (MCQ) ===== -->
         <div id="mcq-screen" class="page flex flex-col items-center justify-center p-4 sm:p-8 min-h-[calc(100vh-144px)] max-w-lg mx-auto">
             <div class="bg-white p-6 sm:p-8 rounded-lg shadow-xl w-full max-w-md">
-                <h2 id="mcq-title" class="text-2xl sm:text-3xl font-bold text-center text-indigo-600 mb-2">
-                    MCQ Practice
-                </h2>
-                <p id="mcq-streak" class="text-center text-gray-500 mb-6">Current Score: 0</p>
-                
-                <!-- NEW: Timer -->
-                <div id="mcq-timer" class="text-center text-2xl font-bold text-red-600 mb-4 h-8"></div>
-                
+                <div class="flex justify-between items-center mb-2">
+                    <h2 id="mcq-title" class="text-2xl sm:text-3xl font-bold text-indigo-600">
+                        MCQ Practice
+                    </h2>
+                    <div id="mcq-score" class="text-xl font-bold text-gray-700">Score: 0</div>
+                </div>
+
+                <!-- Timer Bar -->
+                <div class="w-full bg-gray-200 rounded-full h-2.5 my-4">
+                    <div id="mcq-timer-bar" class="timer-bar" style="width: 100%"></div>
+                </div>
+
                 <div id="mcq-question" class="text-5xl sm:text-6xl font-bold text-center text-gray-800 my-12 h-20 flex items-center justify-center">
                     <!-- Question appears here -->
                 </div>
@@ -175,7 +187,7 @@
                 <h2 class="text-2xl font-bold text-gray-800 mb-4">Overall Progress</h2>
                 <div class="flex justify-around items-center text-center">
                     <div>
-                        <div id="stats-total-points" class="text-4xl font-bold text-yellow-500">0</div>
+                        <div id="stats-best-score" class="text-4xl font-bold text-yellow-500">0</div>
                         <div class="text-sm text-gray-600">Best Score</div>
                     </div>
                     <div>
@@ -185,8 +197,15 @@
                 </div>
             </div>
             
+            <div class="bg-white p-6 rounded-lg shadow-lg mb-6">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">Time Spent (Last 7 Days)</h3>
+                <div id="stats-time-report" class="space-y-2">
+                    <p class="text-gray-500 text-center">Practice to see your time report!</p>
+                </div>
+            </div>
+
             <div class="bg-white p-6 rounded-lg shadow-lg">
-                <h3 class="text-xl font-bold text-gray-800 mb-4">Stats per Table</h3>
+                <h3 class="text-xl font-bold text-gray-800 mb-4">Accuracy per Table</h3>
                 <div id="stats-per-table-list" class="space-y-4">
                     <p class="text-gray-500 text-center">Practice a table to see your stats here!</p>
                 </div>
@@ -308,25 +327,29 @@
         let globalStats = {
             bestScore: 0,
             tables: {}, // e.g., { "7": { correct: 0, incorrect: 0 } }
+            timeLog: {} // e.g., { "2023-10-27": 300 } (seconds)
         };
         
         let currentPractice = {
             table: null, // 'random' or a number like 7
-            mode: 'input'  // 'input' or 'mcq'
+            mode: 'input',  // 'input' or 'mcq'
+            score: 0
         };
         let currentQuestion = {
             num1: 0,
             num2: 0,
             answer: 0
         };
-        let currentScore = 0; // Changed from streak
+        
         let isPracticeActive = false; // Prevents double-clicks
-        let questionTimer = null; // For the 10-second timer
+        let questionTimer;
+        let sessionStartTime; // Will be a Date object
 
         // --- DOM ELEMENTS ---
         const pages = document.querySelectorAll('.page');
         const navButtons = document.querySelectorAll('.btn-nav');
-        const pointsValue = document.getElementById('points-value');
+        // SYNTAX ERROR FIX 1: Removed extra '.' from ID
+        const bestScoreValue = document.getElementById('best-score-value');
         const tableSelectionGrid = document.getElementById('table-selection-grid');
         const feedbackFlash = document.getElementById('feedback-flash');
         
@@ -338,32 +361,35 @@
         const modeSelectCancel = document.getElementById('mode-select-cancel');
         
         // Practice (Input) Screen
+        const practiceScore = document.getElementById('practice-score');
+        const practiceTimerBar = document.getElementById('practice-timer-bar');
         const practiceTitle = document.getElementById('practice-title');
-        const practiceStreak = document.getElementById('practice-streak');
-        const practiceTimer = document.getElementById('practice-timer'); // NEW
         const practiceQuestion = document.getElementById('practice-question');
         const practiceForm = document.getElementById('practice-form');
         const answerInput = document.getElementById('answer-input');
-        const checkAnswerBtn = document.getElementById('check-answer-btn'); // NEW
-        const feedbackMessage = document.getElementById('feedback-message');
-        const practiceFeedbackText = document.getElementById('practice-feedback-text'); // NEW
-        const practiceRestartContainer = document.getElementById('practice-restart-container'); // NEW
+        const practiceFeedbackText = document.getElementById('practice-feedback-text');
+        const practiceRestartContainer = document.getElementById('practice-restart-container');
 
         // Practice (MCQ) Screen
+        const mcqScore = document.getElementById('mcq-score');
+        const mcqTimerBar = document.getElementById('mcq-timer-bar');
         const mcqTitle = document.getElementById('mcq-title');
-        const mcqStreak = document.getElementById('mcq-streak');
-        const mcqTimer = document.getElementById('mcq-timer'); // NEW
         const mcqQuestion = document.getElementById('mcq-question');
         const mcqOptionsGrid = document.getElementById('mcq-options-grid');
-        const mcqFeedbackMessage = document.getElementById('mcq-feedback-message');
-        const mcqFeedbackText = document.getElementById('mcq-feedback-text'); // NEW
-        const mcqRestartContainer = document.getElementById('mcq-restart-container'); // NEW
+        const mcqFeedbackText = document.getElementById('mcq-feedback-text');
+        const mcqRestartContainer = document.getElementById('mcq-restart-container');
         
         // Stats Screen
-        const statsTotalPoints = document.getElementById('stats-total-points');
+        const statsBestScore = document.getElementById('stats-best-score');
         const statsTablesPracticed = document.getElementById('stats-tables-practiced');
         const statsPerTableList = document.getElementById('stats-per-table-list');
+        const statsTimeReport = document.getElementById('stats-time-report');
 
+        // --- TIME & DATE ---
+        function getTodayString() {
+            const today = new Date();
+            return today.toISOString().split('T')[0]; // "YYYY-MM-DD"
+        }
 
         // --- NAVIGATION ---
         function showView(viewId) {
@@ -378,20 +404,20 @@
         }
         
         document.getElementById('nav-home').addEventListener('click', () => {
-            feedbackFlash.className = 'feedback-flash'; // NEW: Clear flash
-            isPracticeActive = false; // Stop practice session
+            feedbackFlash.className = 'feedback-flash'; // Clear flash
+            stopPractice(); // Stop practice session & save time
             renderHomeScreen(); // Refresh stats on home screen
             showView('home-screen');
         });
         document.getElementById('nav-stats').addEventListener('click', () => {
-            feedbackFlash.className = 'feedback-flash'; // NEW: Clear flash
-            isPracticeActive = false; // Stop practice session
+            feedbackFlash.className = 'feedback-flash'; // Clear flash
+            stopPractice(); // Stop practice session & save time
             renderStatsPage();
             showView('stats-screen');
         });
         document.getElementById('nav-tips').addEventListener('click', () => {
-            feedbackFlash.className = 'feedback-flash'; // NEW: Clear flash
-            isPracticeActive = false; // Stop practice session
+            feedbackFlash.className = 'feedback-flash'; // Clear flash
+            stopPractice(); // Stop practice session & save time
             showView('tips-screen');
         });
 
@@ -400,23 +426,17 @@
         function loadStatsFromLocal() {
             const savedStats = localStorage.getItem('tablesAceStats');
             if (savedStats) {
-                globalStats = JSON.parse(savedStats);
-                // Migration from old version
-                if (globalStats.rewardPoints !== undefined) {
-                    globalStats.bestScore = globalStats.rewardPoints;
-                    delete globalStats.rewardPoints;
+                try {
+                    globalStats = JSON.parse(savedStats);
+                    // Ensure new properties exist
+                    if (!globalStats.bestScore) globalStats.bestScore = 0;
+                    if (!globalStats.timeLog) globalStats.timeLog = {};
+                } catch (e) {
+                    console.error("Failed to parse stats from localStorage", e);
+                    globalStats = { bestScore: 0, tables: {}, timeLog: {} };
                 }
-                if (globalStats.highScore !== undefined) { // Migration from v2
-                    globalStats.bestScore = globalStats.highScore;
-                    delete globalStats.highScore;
-                }
-                if (globalStats.bestScore === undefined) {
-                    globalStats.bestScore = 0;
-                }
-            } else {
-                globalStats = { bestScore: 0, tables: {} }; // Default for new user
             }
-            updatePointsDisplay();
+            updateBestScoreDisplay();
             renderHomeScreen();
         }
         
@@ -424,8 +444,25 @@
             localStorage.setItem('tablesAceStats', JSON.stringify(globalStats));
         }
         
-        function updatePointsDisplay() {
-            pointsValue.textContent = globalStats.bestScore || 0;
+        function updateBestScoreDisplay() {
+            bestScoreValue.textContent = globalStats.bestScore || 0;
+        }
+        
+        function updateTimeLog() {
+            if (!sessionStartTime) return; // No session active
+            
+            const today = getTodayString();
+            if (!globalStats.timeLog[today]) {
+                globalStats.timeLog[today] = 0;
+            }
+            // Calculate seconds elapsed since sessionStartTime
+            const secondsElapsed = (new Date().getTime() - sessionStartTime.getTime()) / 1000;
+            globalStats.timeLog[today] += secondsElapsed;
+            
+            console.log(`Logged ${secondsElapsed.toFixed(2)}s for ${today}. Total: ${globalStats.timeLog[today].toFixed(2)}`);
+            
+            sessionStartTime = null; // Mark session as logged
+            saveStatsToLocal();
         }
         
         function renderHomeScreen() {
@@ -444,11 +481,44 @@
             });
         }
 
+        function formatTime(totalSeconds) {
+            if (totalSeconds < 60) return `${Math.round(totalSeconds)}s`;
+            const minutes = Math.floor(totalSeconds / 60);
+            const seconds = Math.round(totalSeconds % 60);
+            if (seconds === 0) return `${minutes}m`;
+            return `${minutes}m ${seconds}s`;
+        }
+        
         function renderStatsPage() {
-            statsTotalPoints.textContent = globalStats.bestScore || 0;
+            statsBestScore.textContent = globalStats.bestScore || 0;
             const practicedTables = Object.keys(globalStats.tables || {}).map(Number).sort((a,b) => a-b);
             statsTablesPracticed.textContent = practicedTables.length;
 
+            // Render Time Report
+            statsTimeReport.innerHTML = '';
+            let hasTimeData = false;
+            for (let i = 0; i < 7; i++) {
+                const d = new Date();
+                d.setDate(d.getDate() - i);
+                const dateString = d.toISOString().split('T')[0];
+                const time = globalStats.timeLog[dateString] || 0;
+                
+                if (time > 0) hasTimeData = true;
+
+                const dayName = i === 0 ? "Today" : i === 1 ? "Yesterday" : d.toLocaleDateString(undefined, { weekday: 'long' });
+                
+                statsTimeReport.innerHTML += `
+                    <div class="flex justify-between items-center text-sm ${i === 0 ? 'font-bold' : ''}">
+                        <span class="text-gray-600">${dayName}</span>
+                        <span class="font-medium text-gray-800">${formatTime(time)}</span>
+                    </div>
+                `;
+            }
+            if (!hasTimeData) {
+                statsTimeReport.innerHTML = `<p class="text-gray-500 text-center">Practice to see your time report!</p>`;
+            }
+
+            // Render Accuracy Report
             if (practicedTables.length === 0) {
                 statsPerTableList.innerHTML = `<p class="text-gray-500 text-center">Practice a table to see your stats here!</p>`;
                 return;
@@ -485,41 +555,51 @@
         
         function startPractice(table, mode) {
             isPracticeActive = true;
-            currentScore = 0; // Reset score on new session
-            currentPractice = { table, mode };
-            // BUG FIX: Show view *before* generating question
-            showView(mode === 'input' ? 'practice-screen' : 'mcq-screen');
+            currentPractice = { table, mode, score: 0 };
+            
+            // Start tracking time
+            sessionStartTime = new Date(); // Log the start time
+            console.log("Practice started at:", sessionStartTime);
+
             generateQuestion();
+            showView(mode === 'input' ? 'practice-screen' : 'mcq-screen');
+        }
+
+        function stopPractice() {
+            if (!isPracticeActive) return; // Don't run if not active
+            isPracticeActive = false;
+            clearInterval(questionTimer);
+            
+            // Log any remaining time
+            updateTimeLog();
+        }
+        
+        function getDifficultyRange() {
+            const score = currentPractice.score;
+            if (score >= 100) return [6, 10]; // Hard (x6 to x10)
+            if (score >= 50) return [1, 10]; // Medium (x1 to x10)
+            return [1, 5]; // Easy (x1 to x5)
         }
 
         function generateQuestion() {
             if (!isPracticeActive) return; // Stop if user navigated away
 
-            // Clear any old timer
-            if (questionTimer) clearInterval(questionTimer);
-            
-            // NEW: Reset UI from previous "wrong" state
-            practiceRestartContainer.classList.add('hidden');
+            // Clear old feedback and buttons
+            practiceFeedbackText.innerHTML = '';
             practiceRestartContainer.innerHTML = '';
-            mcqRestartContainer.classList.add('hidden');
+            practiceRestartContainer.classList.add('hidden');
+            mcqFeedbackText.innerHTML = '';
             mcqRestartContainer.innerHTML = '';
-            checkAnswerBtn.disabled = false;
+            mcqRestartContainer.classList.add('hidden');
 
             // 1. Determine the table number
             currentQuestion.num1 = (currentPractice.table === 'random') 
                 ? (Math.floor(Math.random() * 19) + 2) // 2-20
                 : currentPractice.table;
             
-            // 2. Determine the multiplier (NEW: max 10 and difficulty scaling)
-            let minMultiplier = 1;
-            let maxMultiplier = 10;
-            if (currentScore < 50) {
-                maxMultiplier = 5; // Easy: 1-5
-            } else if (currentScore >= 100) {
-                minMultiplier = 6; // Hard: 6-10
-            } // Medium (50-99) is 1-10
-            currentQuestion.num2 = Math.floor(Math.random() * (maxMultiplier - minMultiplier + 1)) + minMultiplier;
-            
+            // 2. Determine the multiplier based on difficulty
+            const [min, max] = getDifficultyRange();
+            currentQuestion.num2 = Math.floor(Math.random() * (max - min + 1)) + min;
             currentQuestion.answer = currentQuestion.num1 * currentQuestion.num2;
 
             const questionText = `<span class="question-text">${currentQuestion.num1} x ${currentQuestion.num2} = ?</span>`;
@@ -528,19 +608,18 @@
             // 3. Update the correct screen
             if (currentPractice.mode === 'input') {
                 practiceTitle.textContent = titleText;
+                practiceScore.textContent = `Score: ${currentPractice.score}`;
                 practiceQuestion.innerHTML = questionText;
-                practiceStreak.textContent = `Current Score: ${currentScore}`;
-                practiceFeedbackText.innerHTML = ''; // Clear feedback
                 answerInput.value = '';
                 answerInput.disabled = false;
                 answerInput.focus();
+                startTimer(practiceTimerBar, () => processAnswer(false, true));
             } else { // 'mcq'
                 mcqTitle.textContent = titleText;
+                mcqScore.textContent = `Score: ${currentPractice.score}`;
                 mcqQuestion.innerHTML = questionText;
-                mcqStreak.textContent = `Current Score: ${currentScore}`;
-                mcqFeedbackText.innerHTML = '';
                 
-                const options = generateMCQOptions(currentQuestion.answer, currentQuestion.num1);
+                const options = generateMCQOptions(currentQuestion.answer, currentQuestion.num1, currentQuestion.num2);
                 mcqOptionsGrid.innerHTML = ''; // Clear old options
                 options.forEach(option => {
                     const button = document.createElement('button');
@@ -550,125 +629,131 @@
                     button.addEventListener('click', handleMCQAnswer);
                     mcqOptionsGrid.appendChild(button);
                 });
+                startTimer(mcqTimerBar, () => processAnswer(false, true));
             }
-
-            // 4. Start 10-second timer
-            let timeLeft = 10;
-            const timerEl = (currentPractice.mode === 'input') ? practiceTimer : mcqTimer;
-            timerEl.textContent = timeLeft;
-
-            questionTimer = setInterval(() => {
-                timeLeft--;
-                timerEl.textContent = timeLeft;
-                if (timeLeft <= 0) {
-                    clearInterval(questionTimer);
-                    handleTimeout();
-                }
-            }, 1000);
-        }
-
-        function generateMCQOptions(correctAnswer, tableNum) {
-            let options = new Set([correctAnswer]);
-            const multipliers = [
-                -2, -1, 1, 2 // Adjacent multipliers
-            ];
-            
-            // 1. Add adjacent answers (e.g., 15x8 and 15x10 for 15x9)
-            while (options.size < 4 && multipliers.length > 0) {
-                const randIndex = Math.floor(Math.random() * multipliers.length);
-                const offset = multipliers.splice(randIndex, 1)[0];
-                const wrongAnswer = tableNum * (currentQuestion.num2 + offset);
-                if (wrongAnswer !== correctAnswer && wrongAnswer > 0) {
-                    options.add(wrongAnswer);
-                }
-            }
-            
-            // 2. Add "tens" error (e.g., 135 -> 145 or 125)
-            if (options.size < 4) {
-                const wrongAnswer = correctAnswer + (Math.random() < 0.5 ? -10 : 10);
-                if (wrongAnswer !== correctAnswer && wrongAnswer > 0 && !options.has(wrongAnswer)) {
-                    options.add(wrongAnswer);
-                }
-            }
-
-            // 3. Add simple offset if still not full
-            while (options.size < 4) {
-                const wrongAnswer = correctAnswer + (Math.random() < 0.5 ? -1 : 1) * (Math.floor(Math.random() * 3) + 1);
-                if (wrongAnswer !== correctAnswer && wrongAnswer >= 0 && !options.has(wrongAnswer)) {
-                    options.add(wrongAnswer);
-                }
-            }
-            
-            return Array.from(options).sort(() => Math.random() - 0.5);
         }
         
-        // NEW: Handles timeout
-        function handleTimeout() {
-            if (currentPractice.mode === 'input') {
-                answerInput.disabled = true;
-            } else {
-                mcqOptionsGrid.querySelectorAll('button').forEach(btn => btn.disabled = true);
-            }
-            processAnswer(false, true); // (isCorrect = false, isTimeout = true)
+        function startTimer(barElement, onTimeout) {
+            clearInterval(questionTimer);
+            let width = 100;
+            barElement.style.width = `${width}%`;
+            
+            questionTimer = setInterval(() => {
+                width -= 1; // 100 steps over 10s
+                barElement.style.width = `${width}%`;
+                if (width <= 0) {
+                    clearInterval(questionTimer);
+                    onTimeout(); // Time's up
+                }
+            }, 100); // 100ms * 100 = 10s
         }
 
-        // RENAMED/REFACTORED: from handleAnswer to processAnswer
-        function processAnswer(isCorrect, isTimeout) {
-            const tableKey = String(currentQuestion.num1);
-            const streakEl = (currentPractice.mode === 'input') ? practiceStreak : mcqStreak;
+        function generateMCQOptions(correctAnswer, num1, num2) {
+            let wrongOptions = new Set();
             
+            // 1. Add "tricky" options with the same last digit
+            for (let i = 0; i < 2; i++) {
+                const offset = (Math.random() < 0.5 ? -1 : 1) * 10; // +/- 10
+                let wrongAnswer = correctAnswer + offset;
+                if (wrongAnswer > 0 && wrongAnswer !== correctAnswer) {
+                    wrongOptions.add(wrongAnswer);
+                }
+            }
+            
+            // 2. Add an answer from an adjacent multiplier
+            const wrongMultiplier = num2 + (Math.random() < 0.5 ? -1 : 1);
+            if (wrongMultiplier > 0 && wrongMultiplier <= 10) { // Ensure it's in range
+                let wrongAnswer = num1 * wrongMultiplier;
+                if (wrongAnswer !== correctAnswer) {
+                    wrongOptions.add(wrongAnswer);
+                }
+            }
+
+            // 3. Fill with randoms if needed
+            while (wrongOptions.size < 3) {
+                let wrongAnswer = correctAnswer + (Math.random() < 0.5 ? -1 : 1) * (Math.floor(Math.random() * 5) + 1);
+                if (wrongAnswer > 0 && wrongAnswer !== correctAnswer) {
+                    wrongOptions.add(wrongAnswer);
+                }
+            }
+
+            // Combine wrong options and the correct answer
+            let finalOptions = Array.from(wrongOptions).slice(0, 3);
+            finalOptions.push(correctAnswer); // Add correct answer
+            
+            // Shuffle and return
+            return finalOptions.sort(() => Math.random() - 0.5);
+        }
+        
+        function processAnswer(isCorrect, isTimeout = false) {
+            clearInterval(questionTimer);
+            const tableKey = String(currentQuestion.num1);
+            if (!globalStats.tables[tableKey]) {
+                globalStats.tables[tableKey] = { correct: 0, incorrect: 0 };
+            }
+
             if (isCorrect) {
-                currentScore += 10; // Increase score by 10
+                currentPractice.score += 10;
+                globalStats.tables[tableKey].correct += 1;
                 playSound('correct');
                 showFeedbackAnimation('correct');
                 
                 // Load next question after a delay
                 setTimeout(() => {
                     feedbackFlash.className = 'feedback-flash'; // Hide flash
-                    if (isPracticeActive) { // Check again in case user navigated away
+                    if (isPracticeActive) {
                         generateQuestion();
                     }
-                }, 1200); // Shorter delay for correct answer
+                }, 1200);
                 
             } else {
-                currentScore = 0; // Reset score
+                // WRONG ANSWER
+                globalStats.tables[tableKey].incorrect += 1;
                 playSound('incorrect');
-                showFeedbackAnimation('incorrect', isTimeout);
                 
-                // NEW: Show restart button instead of advancing
+                let feedback = `Wrong! Answer: ${currentQuestion.answer}. <span class="font-bold">Score: ${currentPractice.score}</span>`;
+                if (isTimeout) {
+                    feedback = `Time's up! Answer: ${currentQuestion.answer}. <span class="font-bold">Score: ${currentPractice.score}</span>`;
+                }
+                
+                // Check for new best score
+                if (currentPractice.score > globalStats.bestScore) {
+                    globalStats.bestScore = currentPractice.score;
+                    feedback += ` (New Best!)`;
+                    updateBestScoreDisplay();
+                }
+                
+                showFeedbackAnimation('incorrect', feedback);
                 showRestartButton();
                 
-                // NEW: Disable input/buttons
-                if (currentPractice.mode === 'input') {
-                    checkAnswerBtn.disabled = true;
-                } else {
-                    mcqOptionsGrid.querySelectorAll('button').forEach(btn => btn.disabled = true);
-                }
+                // Stop the session and log time
+                stopPractice();
+                currentPractice.score = 0;
             }
             
-            // BUG FIX: Immediately update the current score UI
-            streakEl.textContent = `Current Score: ${currentScore}`;
-            
-            // Update High Score
-            if (currentScore > globalStats.bestScore) {
-                globalStats.bestScore = currentScore;
-            }
-            
-            // Update table stats (accuracy)
-            if (!globalStats.tables[tableKey]) {
-                globalStats.tables[tableKey] = { correct: 0, incorrect: 0 };
-            }
-            if (isCorrect) {
-                globalStats.tables[tableKey].correct += 1;
-            } else {
-                globalStats.tables[tableKey].incorrect += 1;
-            }
-            
-            updatePointsDisplay(); // This will now update the High Score
             saveStatsToLocal(); // Save progress
         }
         
-        function showFeedbackAnimation(type, isTimeout = false) {
+        function showRestartButton() {
+            const container = (currentPractice.mode === 'input') ? practiceRestartContainer : mcqRestartContainer;
+            container.innerHTML = ''; // Clear old
+            container.classList.remove('hidden');
+            
+            const button = document.createElement('button');
+            button.textContent = "Restart Quiz";
+            button.className = "w-full py-3 bg-indigo-600 text-white font-bold text-lg rounded-lg shadow-md transition-colors hover:bg-indigo-700";
+            
+            // Attach listener directly
+            button.addEventListener('click', () => {
+                // Clear the red flash *before* starting
+                feedbackFlash.className = 'feedback-flash';
+                startPractice(currentPractice.table, currentPractice.mode);
+            });
+            
+            container.appendChild(button);
+        }
+        
+        function showFeedbackAnimation(type, text = "") {
             const feedbackTextEl = (currentPractice.mode === 'input') ? practiceFeedbackText : mcqFeedbackText;
             
             if (type === 'correct') {
@@ -676,38 +761,8 @@
                 feedbackTextEl.innerHTML = `<span class="text-green-600 font-bold text-lg animate-pulse">+10 Points!</span>`;
             } else {
                 feedbackFlash.className = 'feedback-flash active bg-red-500/30';
-                let message = '';
-                if (isTimeout) {
-                    message = `<span class="text-red-600 font-bold text-lg">Time's Up!</span><br><span class="text-gray-700">Answer: ${currentQuestion.answer}</span>`;
-                } else {
-                    message = `<span class="text-red-600 font-bold text-lg">Wrong!</span><br><span class="text-gray-700">Answer: ${currentQuestion.answer}</span>`;
-                }
-                feedbackTextEl.innerHTML = message;
+                feedbackTextEl.innerHTML = `<span class="text-red-600 font-bold text-lg">${text}</span>`;
             }
-        }
-        
-        // NEW: Function to show restart button
-        function showRestartButton() {
-            const container = (currentPractice.mode === 'input') ? practiceRestartContainer : mcqRestartContainer;
-            
-            // 1. Create the button element
-            const restartBtn = document.createElement('button');
-            restartBtn.className = "w-full py-2 bg-red-600 text-white font-bold text-lg rounded-lg shadow-md transition-colors hover:bg-red-700 active:bg-red-800";
-            restartBtn.textContent = "Restart Quiz";
-
-            // 2. Add the listener DIRECTLY to the new button
-            restartBtn.addEventListener('click', () => {
-                const streakEl = (currentPractice.mode === 'input') ? practiceStreak : mcqStreak;
-                streakEl.textContent = `Current Score: 0`; // Update UI
-                container.classList.add('hidden');
-                container.innerHTML = ''; // Clear the container
-                generateQuestion(); // Start the next question
-            }, { once: true }); // {once: true} prevents multiple listeners
-
-            // 3. Clear the container and append the new button
-            container.innerHTML = ''; // Clear any old content
-            container.appendChild(restartBtn);
-            container.classList.remove('hidden');
         }
 
         // --- EVENT LISTENERS ---
@@ -715,29 +770,31 @@
         // Input practice form
         practiceForm.addEventListener('submit', (e) => {
             e.preventDefault();
-            if (answerInput.disabled) return; // Prevent double submit
-            if (questionTimer) clearInterval(questionTimer); // Stop timer
-            
+            if (!isPracticeActive) return; // Don't submit if game isn't active
             const userAnswer = parseInt(answerInput.value, 10);
             answerInput.disabled = true; // Disable input after submit
-            processAnswer(userAnswer === currentQuestion.answer, false);
+            processAnswer(userAnswer === currentQuestion.answer);
         });
         
         // MCQ answer buttons
+        // SYNTAX ERROR FIX 2: Removed extra ')'
         function handleMCQAnswer(e) {
-            if (questionTimer) clearInterval(questionTimer); // Stop timer
-
-            const userAnswer = parseInt(e.target.dataset.answer, 10);
+            // Find the button that was clicked, even if user clicked text inside
+            const targetButton = e.target.closest('button');
+            if (!targetButton || !isPracticeActive) return; // Exit if click wasn't on a button or game stopped
+            
+            const userAnswer = parseInt(targetButton.dataset.answer, 10);
+            
             // Disable all buttons
             mcqOptionsGrid.querySelectorAll('button').forEach(btn => {
                 btn.disabled = true;
                 if (parseInt(btn.dataset.answer, 10) === currentQuestion.answer) {
                     btn.classList.add('bg-green-500', 'text-white'); // Show correct
-                } else if (btn === e.target) {
+                } else if (btn === targetButton) {
                     btn.classList.add('bg-red-500', 'text-white'); // Show selected wrong
                 }
             });
-            processAnswer(userAnswer === currentQuestion.answer, false);
+            processAnswer(userAnswer === currentQuestion.answer);
         }
 
         // Home screen buttons
@@ -767,11 +824,13 @@
                     const table = parseInt(targetButton.dataset.practiceTable, 10);
                     modalTitle.textContent = `Practice Table of ${table}`;
                     modal.classList.remove('hidden');
+                    
                     // Attach temp listeners to modal buttons
                     modeSelectInput.onclick = () => {
                         modal.classList.add('hidden');
                         startPractice(table, 'input');
                     };
+                    // SYNTAX ERROR FIX 3: Removed stray 'D'
                     modeSelectMcq.onclick = () => {
                         modal.classList.add('hidden');
                         startPractice(table, 'mcq');
