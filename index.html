@@ -378,16 +378,19 @@
         }
         
         document.getElementById('nav-home').addEventListener('click', () => {
+            feedbackFlash.className = 'feedback-flash'; // NEW: Clear flash
             isPracticeActive = false; // Stop practice session
             renderHomeScreen(); // Refresh stats on home screen
             showView('home-screen');
         });
         document.getElementById('nav-stats').addEventListener('click', () => {
+            feedbackFlash.className = 'feedback-flash'; // NEW: Clear flash
             isPracticeActive = false; // Stop practice session
             renderStatsPage();
             showView('stats-screen');
         });
         document.getElementById('nav-tips').addEventListener('click', () => {
+            feedbackFlash.className = 'feedback-flash'; // NEW: Clear flash
             isPracticeActive = false; // Stop practice session
             showView('tips-screen');
         });
