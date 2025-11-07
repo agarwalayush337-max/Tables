@@ -4,45 +4,79 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tables Ace</title>
-    <!-- 1. Load Tailwind CSS for styling -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* A simple font and smooth transitions */
+        /* A more engaging font */
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
         }
+        /* Custom classes for animations */
         .page {
             display: none; /* All pages hidden by default */
+            animation: fadeIn 0.3s ease-in-out;
         }
         .page.active {
-            display: block; /* Show the active page */
+            display: block;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
         .btn-nav {
-            @apply flex flex-col items-center justify-center w-full h-full text-gray-500;
+            @apply flex flex-col items-center justify-center w-full h-full text-gray-500 transition-colors duration-200;
         }
         .btn-nav.active {
             @apply text-indigo-600;
         }
-        /* Style for the answer feedback */
-        .feedback {
-            transition: all 0.3s ease-in-out;
-            transform: scale(1.05);
+        /* Feedback flash overlay */
+        .feedback-flash {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease-out;
+            z-index: 999;
+        }
+        .feedback-flash.active {
+            opacity: 1;
+        }
+        /* Modal styles */
+        .modal {
+            @apply fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center p-8 z-50;
+        }
+        .modal-content {
+            @apply bg-white p-6 rounded-lg shadow-xl w-full max-w-sm;
+            animation: zoomIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        @keyframes zoomIn {
+            from { opacity: 0; transform: scale(0.7); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        /* Home screen table button progress */
+        .table-btn-progress {
+            @apply absolute bottom-0 left-0 h-1 bg-green-500 rounded-b-lg;
+            transition: width 0.3s ease-out;
+        }
+        /* Animated question text */
+        .question-text {
+            animation: popIn 0.2s ease-out;
+        }
+        @keyframes popIn {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
         }
     </style>
 </head>
-<body class="bg-gray-100">
+<body class="bg-gray-100 antialiased">
 
-    <!-- 
-      APP CONTAINER 
-      All screens are inside this. We'll show/hide them with JS.
-    -->
+    <div id="feedback-flash" class="feedback-flash"></div>
+
     <div id="app-container" class="pb-20">
 
-        <!-- ===== HEADER (always visible after login) ===== -->
         <header id="app-header" class="hidden sticky top-0 bg-white shadow-md z-10 p-4">
             <div class="max-w-lg mx-auto flex justify-between items-center">
                 <h1 class="text-2xl font-bold text-indigo-600">Tables Ace</h1>
-                <div id="reward-points-display" class="flex items-center gap-2 px-4 py-2 bg-yellow-400 text-yellow-900 rounded-full font-bold">
+                <div id="reward-points-display" class="flex items-center gap-2 px-4 py-2 bg-yellow-400 text-yellow-900 rounded-full font-bold text-sm sm:text-base">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                         <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.54-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.95-.69l1.07-3.292z" />
                     </svg>
@@ -51,89 +85,80 @@
             </div>
         </header>
 
-        <!-- ===== PAGE 1: AUTH SCREEN ===== -->
         <div id="auth-screen" class="page active flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-indigo-500 to-purple-600 p-8 text-white">
-            <h1 class="text-6xl font-bold mb-4 drop-shadow-lg">Tables Ace</h1>
-            <p class="text-2xl mb-8 opacity-90">Become a Multiplication Master!</p>
-            <button id="start-btn" class="px-12 py-4 bg-white text-indigo-600 font-bold text-xl rounded-full shadow-2xl transform transition-transform hover:scale-105 hover:bg-yellow-300">
-                Start Learning
-            </button>
-            <div id="loading-indicator" class="mt-8 text-white text-lg hidden">
-                Loading...
+            <div class="text-center">
+                <div class="text-6xl mb-4">✨</div>
+                <h1 class="text-5xl sm:text-6xl font-bold mb-4 drop-shadow-lg">Tables Ace</h1>
+                <p class="text-xl sm:text-2xl mb-8 opacity-90">Become a Multiplication Master!</p>
+                <button id="start-btn" class="w-full sm:w-auto px-12 py-4 bg-white text-indigo-600 font-bold text-xl rounded-full shadow-2xl transform transition-transform hover:scale-105 active:scale-95 hover:bg-yellow-300">
+                    Start Learning
+                </button>
+                <div id="loading-indicator" class="mt-8 text-white text-lg hidden">
+                    Loading...
+                </div>
             </div>
         </div>
 
-        <!-- ===== PAGE 2: HOME SCREEN ===== -->
-        <div id="home-screen" class="page p-6 max-w-lg mx-auto">
-            <h2 class="text-xl font-bold text-gray-800 mb-4">Random Practice</h2>
+        <div id="home-screen" class="page p-4 sm:p-6 max-w-lg mx-auto">
+            <h2 class="text-xl font-bold text-gray-800 mb-4 px-2">Random Practice</h2>
             <div class="grid grid-cols-2 gap-4 mb-6">
-                <button data-mode="random-mcq" class="practice-btn flex flex-col items-center justify-center h-24 bg-white rounded-lg shadow-md text-purple-600 font-bold text-lg transition-all transform hover:scale-105 hover:bg-purple-500 hover:text-white">
-                    <span class="text-2xl">?</span>
+                <button data-practice-type="random" data-practice-mode="mcq" class="practice-btn flex flex-col items-center justify-center h-28 bg-white rounded-lg shadow-lg text-purple-600 font-bold text-lg transition-all transform hover:scale-105 active:scale-95 hover:bg-purple-500 hover:text-white">
+                    <span class="text-3xl">🔀</span>
                     <span>Mixed Quiz (MCQ)</span>
                 </button>
-                <button data-mode="random-input" class="practice-btn flex flex-col items-center justify-center h-24 bg-white rounded-lg shadow-md text-purple-600 font-bold text-lg transition-all transform hover:scale-105 hover:bg-purple-500 hover:text-white">
-                    <span class="text-2xl">?</span>
+                <button data-practice-type="random" data-practice-mode="input" class="practice-btn flex flex-col items-center justify-center h-28 bg-white rounded-lg shadow-lg text-purple-600 font-bold text-lg transition-all transform hover:scale-105 active:scale-95 hover:bg-purple-500 hover:text-white">
+                    <span class="text-3xl">⌨️</span>
                     <span>Mixed Quiz (Input)</span>
                 </button>
             </div>
             
-            <h2 class="text-xl font-bold text-gray-800 mb-4">Practice a Table (2-20)</h2>
+            <h2 class="text-xl font-bold text-gray-800 mb-4 px-2">Practice a Table (2-20)</h2>
             <div id="table-selection-grid" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-4">
-                <!-- Table buttons will be generated by JS -->
-            </div>
+                </div>
         </div>
 
-        <!-- ===== PAGE 3: PRACTICE SCREEN (INPUT) ===== -->
-        <div id="practice-screen" class="page flex flex-col items-center justify-center p-8 min-h-[calc(100vh-144px)] max-w-lg mx-auto">
-            <div class="bg-white p-8 rounded-lg shadow-xl w-full max-w-md">
-                <h2 id="practice-title" class="text-3xl font-bold text-center text-indigo-600 mb-2">
-                    Table of 0
+        <div id="practice-screen" class="page flex flex-col items-center justify-center p-4 sm:p-8 min-h-[calc(100vh-144px)] max-w-lg mx-auto">
+            <div class="bg-white p-6 sm:p-8 rounded-lg shadow-xl w-full max-w-md">
+                <h2 id="practice-title" class="text-2xl sm:text-3xl font-bold text-center text-indigo-600 mb-2">
+                    Table Practice
                 </h2>
                 <p id="practice-streak" class="text-center text-gray-500 mb-6">Current Streak: 0</p>
                 
-                <div id="practice-question" class="text-6xl font-bold text-center text-gray-800 my-12">
-                    0 x 0 = ?
-                </div>
+                <div id="practice-question" class="text-5xl sm:text-6xl font-bold text-center text-gray-800 my-12 h-20 flex items-center justify-center">
+                    </div>
                 
                 <form id="practice-form">
                     <input type="number" id="answer-input" class="w-full text-4xl p-4 text-center border-4 border-indigo-300 rounded-lg focus:outline-none focus:border-indigo-500" autocomplete="off" />
-                    <button type="submit" id="check-answer-btn" class="w-full mt-6 py-4 bg-indigo-600 text-white font-bold text-xl rounded-lg shadow-md transition-colors hover:bg-indigo-700 disabled:bg-gray-400">
+                    <button type="submit" id="check-answer-btn" class="w-full mt-6 py-4 bg-indigo-600 text-white font-bold text-xl rounded-lg shadow-md transition-colors hover:bg-indigo-700 disabled:bg-gray-400 active:bg-indigo-800">
                         Check
                     </button>
                 </form>
                 
-                <div id="feedback-message" class="mt-6 p-4 rounded-lg text-center font-semibold h-16">
-                    <!-- Feedback appears here -->
-                </div>
+                <div id="feedback-message" class="mt-6 p-4 rounded-lg text-center font-semibold h-16 flex items-center justify-center">
+                    </div>
             </div>
         </div>
         
-        <!-- ===== PAGE 4: PRACTICE SCREEN (MCQ) ===== -->
-        <div id="mcq-screen" class="page flex flex-col items-center justify-center p-8 min-h-[calc(100vh-144px)] max-w-lg mx-auto">
-            <div class="bg-white p-8 rounded-lg shadow-xl w-full max-w-md">
-                <h2 id="mcq-title" class="text-3xl font-bold text-center text-indigo-600 mb-2">
-                    Table of 0
+        <div id="mcq-screen" class="page flex flex-col items-center justify-center p-4 sm:p-8 min-h-[calc(100vh-144px)] max-w-lg mx-auto">
+            <div class="bg-white p-6 sm:p-8 rounded-lg shadow-xl w-full max-w-md">
+                <h2 id="mcq-title" class="text-2xl sm:text-3xl font-bold text-center text-indigo-600 mb-2">
+                    MCQ Practice
                 </h2>
                 <p id="mcq-streak" class="text-center text-gray-500 mb-6">Current Streak: 0</p>
                 
-                <div id="mcq-question" class="text-6xl font-bold text-center text-gray-800 my-12">
-                    0 x 0 = ?
-                </div>
+                <div id="mcq-question" class="text-5xl sm:text-6xl font-bold text-center text-gray-800 my-12 h-20 flex items-center justify-center">
+                    </div>
                 
                 <div id="mcq-options-grid" class="grid grid-cols-2 gap-4">
-                    <!-- MCQ buttons will be generated by JS -->
-                </div>
+                    </div>
                 
-                <div id="mcq-feedback-message" class="mt-6 p-4 rounded-lg text-center font-semibold h-16">
-                    <!-- Feedback appears here -->
-                </div>
+                <div id="mcq-feedback-message" class="mt-6 p-4 rounded-lg text-center font-semibold h-16 flex items-center justify-center">
+                    </div>
             </div>
         </div>
 
-
-        <!-- ===== PAGE 5: STATS SCREEN ===== -->
-        <div id="stats-screen" class="page p-6 max-w-lg mx-auto">
-            <div class="bg-white p-6 rounded-lg shadow-md mb-6">
+        <div id="stats-screen" class="page p-4 sm:p-6 max-w-lg mx-auto">
+            <div class="bg-white p-6 rounded-lg shadow-lg mb-6">
                 <h2 class="text-2xl font-bold text-gray-800 mb-4">Overall Progress</h2>
                 <div class="flex justify-around items-center text-center">
                     <div>
@@ -147,7 +172,7 @@
                 </div>
             </div>
             
-            <div class="bg-white p-6 rounded-lg shadow-md">
+            <div class="bg-white p-6 rounded-lg shadow-lg">
                 <h3 class="text-xl font-bold text-gray-800 mb-4">Stats per Table</h3>
                 <div id="stats-per-table-list" class="space-y-4">
                     <p class="text-gray-500 text-center">Practice a table to see your stats here!</p>
@@ -155,8 +180,7 @@
             </div>
         </div>
 
-        <!-- ===== PAGE 6: TIPS SCREEN ===== -->
-        <div id="tips-screen" class="page p-6 max-w-lg mx-auto">
+        <div id="tips-screen" class="page p-4 sm:p-6 max-w-lg mx-auto">
             <h2 class="text-2xl font-bold text-gray-800 mb-6">Table Tricks & Logic</h2>
             <div class="space-y-4">
                 <div class="bg-white p-4 rounded-lg shadow-md">
@@ -194,12 +218,23 @@
             </div>
         </div>
 
-    </div> <!-- End #app-container -->
+    </div> <div id="mode-selector-modal" class="modal hidden">
+        <div class="modal-content">
+            <h3 id="mode-selector-title" class="text-xl font-bold text-center mb-6">Practice Table 0</h3>
+            <div class="grid grid-cols-2 gap-4">
+                <button id="mode-select-input" class="flex flex-col items-center justify-center p-6 bg-indigo-500 text-white rounded-lg shadow-md transition-transform transform hover:scale-105 active:scale-95">
+                    <span class="text-3xl">⌨️</span>
+                    <span class="font-semibold mt-2">Input</span>
+                </button>
+                <button id="mode-select-mcq" class="flex flex-col items-center justify-center p-6 bg-purple-500 text-white rounded-lg shadow-md transition-transform transform hover:scale-105 active:scale-95">
+                    <span class="text-3xl">🔀</span>
+                    <span class="font-semibold mt-2">MCQ</span>
+                </button>
+            </div>
+            <button id="mode-select-cancel" class="w-full mt-6 text-center text-gray-500 hover:text-gray-700">Cancel</button>
+        </div>
+    </div>
 
-    <!-- 
-      BOTTOM NAVIGATION BAR 
-      (Hidden on auth screen)
-    -->
     <nav id="bottom-nav" class="hidden fixed bottom-0 left-0 right-0 bg-white shadow-[0_-2px_10px_rgba(0,0,0,0.1)] flex justify-around items-center h-16 max-w-lg mx-auto">
         <button id="nav-home" class="btn-nav active">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 20 20" fill="currentColor"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" /></svg>
@@ -216,9 +251,6 @@
     </nav>
 
 
-    <!-- 
-      3. FIREBASE & JAVASCRIPT LOGIC
-    -->
     <script type="module">
         // Import Firebase modules
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
@@ -251,7 +283,7 @@
         if (Object.keys(firebaseConfig).length === 0) {
             console.warn("Using fallback Firebase config. Please provide a __firebase_config.");
             firebaseConfig = {
-                apiKey: "YOUR_API_KEY", // Get this from your Firebase project
+                apiKey: "YOUR_API_KEY",
                 authDomain: "YOUR_AUTH_DOMAIN",
                 projectId: "YOUR_PROJECT_ID",
                 storageBucket: "YOUR_STORAGE_BUCKET",
@@ -271,18 +303,54 @@
             console.error("Error initializing Firebase:", e);
         }
 
+        // --- AUDIO ---
+        let audioCtx;
+        try {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        } catch (e) {
+            console.warn('Web Audio API is not supported in this browser');
+        }
+
+        function playSound(type) {
+            if (!audioCtx) return;
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            
+            gainNode.gain.setValueAtTime(0.05, audioCtx.currentTime); // Start at low volume
+            
+            if (type === 'correct') {
+                oscillator.type = 'triangle';
+                oscillator.frequency.setValueAtTime(600, audioCtx.currentTime);
+                oscillator.frequency.exponentialRampToValueAtTime(800, audioCtx.currentTime + 0.1);
+                gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.2);
+            } else if (type === 'incorrect') {
+                oscillator.type = 'square';
+                oscillator.frequency.setValueAtTime(200, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.3);
+            }
+            oscillator.start(audioCtx.currentTime);
+            oscillator.stop(audioCtx.currentTime + 0.3);
+        }
+
         // --- GLOBAL STATE ---
-        let stats = {
+        let globalStats = {
             rewardPoints: 0,
             tables: {}, // e.g., { "7": { correct: 0, incorrect: 0 } }
         };
+        // This is the new, robust state for the practice session
+        let currentPractice = {
+            table: null, // 'random' or a number like 7
+            mode: 'input'  // 'input' or 'mcq'
+        };
         let currentQuestion = {
-            table: 0,
-            multiplier: 0,
-            correctAnswer: 0,
-            mode: 'input' // 'input' or 'mcq'
+            num1: 0,
+            num2: 0,
+            answer: 0
         };
         let streak = 0;
+        let isPracticeActive = false; // Prevents double-clicks
 
         // --- DOM ELEMENTS ---
         const pages = document.querySelectorAll('.page');
@@ -294,6 +362,14 @@
         const loadingIndicator = document.getElementById('loading-indicator');
         const pointsValue = document.getElementById('points-value');
         const tableSelectionGrid = document.getElementById('table-selection-grid');
+        const feedbackFlash = document.getElementById('feedback-flash');
+        
+        // Modal
+        const modal = document.getElementById('mode-selector-modal');
+        const modalTitle = document.getElementById('mode-selector-title');
+        const modeSelectInput = document.getElementById('mode-select-input');
+        const modeSelectMcq = document.getElementById('mode-select-mcq');
+        const modeSelectCancel = document.getElementById('mode-select-cancel');
         
         // Practice (Input) Screen
         const practiceScreen = document.getElementById('practice-screen');
@@ -330,26 +406,31 @@
             }
         }
         
-        document.getElementById('nav-home').addEventListener('click', () => showView('home-screen'));
+        document.getElementById('nav-home').addEventListener('click', () => {
+            isPracticeActive = false; // Stop practice session
+            showView('home-screen');
+        });
         document.getElementById('nav-stats').addEventListener('click', () => {
+            isPracticeActive = false; // Stop practice session
             renderStatsPage();
             showView('stats-screen');
         });
-        document.getElementById('nav-tips').addEventListener('click', () => showView('tips-screen'));
+        document.getElementById('nav-tips').addEventListener('click', () => {
+            isPracticeActive = false; // Stop practice session
+            showView('tips-screen');
+        });
 
 
         // --- AUTHENTICATION ---
         startBtn.addEventListener('click', async () => {
             startBtn.disabled = true;
             loadingIndicator.classList.remove('hidden');
-
             try {
                 if (initialAuthToken) {
                     await signInWithCustomToken(auth, initialAuthToken);
                 } else {
                     await signInAnonymously(auth);
                 }
-                // onAuthStateChanged will handle the rest
             } catch (error) {
                 console.error("Error signing in:", error);
                 startBtn.disabled = false;
@@ -363,27 +444,24 @@
                 const dbPath = `artifacts/${appId}/users/${userId}/math-stats`;
                 dbRef = doc(db, dbPath, 'user-data');
                 
-                // Start listening to data
                 onSnapshot(dbRef, (docSnap) => {
                     if (docSnap.exists()) {
-                        stats = docSnap.data();
+                        globalStats = docSnap.data();
                     } else {
-                        // No data, create initial doc
-                        setDoc(dbRef, stats).catch(e => console.error("Error creating doc:", e));
+                        setDoc(dbRef, globalStats).catch(e => console.error("Error creating doc:", e));
                     }
                     updatePointsDisplay();
+                    renderHomeScreen(); // Update home screen with stats
                 }, (error) => {
                     console.error("Error listening to Firestore:", error);
                 });
 
-                // Show the app
                 authScreen.classList.remove('active');
                 showView('home-screen');
                 appHeader.classList.remove('hidden');
                 bottomNav.classList.remove('hidden');
             } else {
                 userId = null;
-                // Show login
                 authScreen.classList.add('active');
                 appHeader.classList.add('hidden');
                 bottomNav.classList.add('hidden');
@@ -392,21 +470,37 @@
 
         // --- DATA & STATS ---
         function updatePointsDisplay() {
-            pointsValue.textContent = stats.rewardPoints || 0;
+            pointsValue.textContent = globalStats.rewardPoints || 0;
         }
 
         async function updateStatsInDB() {
             if (!dbRef) return;
             try {
-                await setDoc(dbRef, stats);
+                await setDoc(dbRef, globalStats);
             } catch (error) {
                 console.error("Error updating stats:", error);
             }
         }
+        
+        function renderHomeScreen() {
+            const buttons = tableSelectionGrid.querySelectorAll('.practice-btn');
+            buttons.forEach(btn => {
+                const tableNum = btn.dataset.practiceTable;
+                const data = globalStats.tables[tableNum];
+                let accuracy = 0;
+                if (data && (data.correct + data.incorrect) > 0) {
+                    accuracy = (data.correct / (data.correct + data.incorrect)) * 100;
+                }
+                const progressBar = btn.querySelector('.table-btn-progress');
+                if (progressBar) {
+                    progressBar.style.width = `${accuracy}%`;
+                }
+            });
+        }
 
         function renderStatsPage() {
-            statsTotalPoints.textContent = stats.rewardPoints || 0;
-            const practicedTables = Object.keys(stats.tables || {}).map(Number).sort((a,b) => a-b);
+            statsTotalPoints.textContent = globalStats.rewardPoints || 0;
+            const practicedTables = Object.keys(globalStats.tables || {}).map(Number).sort((a,b) => a-b);
             statsTablesPracticed.textContent = practicedTables.length;
 
             if (practicedTables.length === 0) {
@@ -416,7 +510,7 @@
 
             statsPerTableList.innerHTML = ''; // Clear list
             practicedTables.forEach(tableNum => {
-                const data = stats.tables[tableNum];
+                const data = globalStats.tables[tableNum];
                 const total = data.correct + data.incorrect;
                 const accuracy = total === 0 ? 0 : ((data.correct / total) * 100).toFixed(0);
                 
@@ -441,88 +535,98 @@
             });
         }
 
-
         // --- PRACTICE LOGIC ---
-        function generateQuestion(table, mode) {
-            currentQuestion.table = (table === 'random') ? (Math.floor(Math.random() * 19) + 2) : table; // 2-20
-            currentQuestion.multiplier = Math.floor(Math.random() * 12) + 1; // 1-12
-            currentQuestion.correctAnswer = currentQuestion.table * currentQuestion.multiplier;
-            currentQuestion.mode = mode;
+        
+        function startPractice(table, mode) {
+            isPracticeActive = true;
+            streak = 0;
+            currentPractice = { table, mode };
+            generateQuestion();
+            showView(mode === 'input' ? 'practice-screen' : 'mcq-screen');
+        }
 
-            const questionText = `${currentQuestion.table} x ${currentQuestion.multiplier} = ?`;
-            const titleText = (table === 'random') ? `Mixed Quiz` : `Table of ${table}`;
+        function generateQuestion() {
+            if (!isPracticeActive) return; // Stop if user navigated away
 
-            if (mode === 'input') {
+            // 1. Determine the table number
+            currentQuestion.num1 = (currentPractice.table === 'random') 
+                ? (Math.floor(Math.random() * 19) + 2) // 2-20
+                : currentPractice.table;
+            
+            // 2. Determine the multiplier
+            currentQuestion.num2 = Math.floor(Math.random() * 12) + 1; // 1-12
+            currentQuestion.answer = currentQuestion.num1 * currentQuestion.num2;
+
+            const questionText = `<span class="question-text">${currentQuestion.num1} x ${currentQuestion.num2} = ?</span>`;
+            const titleText = (currentPractice.table === 'random') ? `Mixed Quiz` : `Table of ${currentQuestion.num1}`;
+
+            // 3. Update the correct screen
+            if (currentPractice.mode === 'input') {
                 practiceTitle.textContent = titleText;
-                practiceQuestion.textContent = questionText;
+                practiceQuestion.innerHTML = questionText;
                 practiceStreak.textContent = `Current Streak: ${streak}`;
-                feedbackMessage.textContent = '';
+                feedbackMessage.innerHTML = ''; // Clear feedback
                 answerInput.value = '';
                 answerInput.disabled = false;
-                showView('practice-screen');
                 answerInput.focus();
-            } else { // mode === 'mcq'
+            } else { // 'mcq'
                 mcqTitle.textContent = titleText;
-                mcqQuestion.textContent = questionText;
+                mcqQuestion.innerHTML = questionText;
                 mcqStreak.textContent = `Current Streak: ${streak}`;
-                mcqFeedbackMessage.textContent = '';
+                mcqFeedbackMessage.innerHTML = '';
                 
-                // Generate MCQ options
-                const options = generateMCQOptions(currentQuestion.correctAnswer);
+                const options = generateMCQOptions(currentQuestion.answer, currentQuestion.num1);
                 mcqOptionsGrid.innerHTML = ''; // Clear old options
                 options.forEach(option => {
                     const button = document.createElement('button');
                     button.textContent = option;
                     button.dataset.answer = option;
-                    button.className = "py-6 bg-white text-indigo-600 font-bold text-3xl rounded-lg shadow-md transition-colors hover:bg-indigo-100";
+                    button.className = "py-6 bg-white text-indigo-600 font-bold text-3xl rounded-lg shadow-md transition-all transform hover:scale-105 active:scale-95 hover:bg-indigo-100 disabled:opacity-50";
                     button.addEventListener('click', handleMCQAnswer);
                     mcqOptionsGrid.appendChild(button);
                 });
-                showView('mcq-screen');
             }
         }
 
-        function generateMCQOptions(correctAnswer) {
+        function generateMCQOptions(correctAnswer, tableNum) {
             let options = new Set([correctAnswer]);
             while (options.size < 4) {
-                let wrongAnswer;
                 // Generate a plausible wrong answer
-                const offset = (Math.floor(Math.random() * 10) - 5) * currentQuestion.table; // e.g., ± 1 or 2 * table
-                if (offset === 0 || options.has(correctAnswer + offset) || (correctAnswer + offset < 0)) {
-                    // if offset is bad, try a random number near the answer
-                    wrongAnswer = Math.max(0, correctAnswer + Math.floor(Math.random() * 20) - 10);
-                } else {
-                    wrongAnswer = correctAnswer + offset;
+                const offsetType = Math.random();
+                let wrongAnswer;
+                if (offsetType < 0.5) { // Off by one or two
+                    wrongAnswer = correctAnswer + (Math.random() < 0.5 ? -1 : 1) * (Math.floor(Math.random() * 2) + 1);
+                } else { // Off by one or two *multipliers*
+                    wrongAnswer = correctAnswer + (Math.random() < 0.5 ? -tableNum : tableNum);
                 }
                 
-                if (wrongAnswer !== correctAnswer) {
+                if (wrongAnswer !== correctAnswer && wrongAnswer >= 0 && !options.has(wrongAnswer)) {
                     options.add(wrongAnswer);
                 }
             }
-            // Shuffle the options
             return Array.from(options).sort(() => Math.random() - 0.5);
         }
-
+        
         function handleAnswer(isCorrect) {
-            const tableKey = String(currentQuestion.table);
-            if (!stats.tables[tableKey]) {
-                stats.tables[tableKey] = { correct: 0, incorrect: 0 };
+            const tableKey = String(currentQuestion.num1);
+            if (!globalStats.tables[tableKey]) {
+                globalStats.tables[tableKey] = { correct: 0, incorrect: 0 };
             }
 
-            const feedbackEl = (currentQuestion.mode === 'input') ? feedbackMessage : mcqFeedbackMessage;
-
+            const feedbackEl = (currentPractice.mode === 'input') ? feedbackMessage : mcqFeedbackMessage;
+            
             if (isCorrect) {
-                stats.rewardPoints += 10;
-                stats.tables[tableKey].correct += 1;
+                globalStats.rewardPoints += 10;
+                globalStats.tables[tableKey].correct += 1;
                 streak += 1;
-                feedbackEl.textContent = "Great job! +10 points";
-                feedbackEl.className = "feedback mt-6 p-4 rounded-lg text-center font-semibold h-16 text-green-600 bg-green-100";
+                playSound('correct');
+                showFeedbackAnimation('correct');
             } else {
-                stats.rewardPoints = Math.max(0, stats.rewardPoints - 5);
-                stats.tables[tableKey].incorrect += 1;
+                globalStats.rewardPoints = Math.max(0, globalStats.rewardPoints - 5);
+                globalStats.tables[tableKey].incorrect += 1;
                 streak = 0;
-                feedbackEl.textContent = `Not quite. The answer was ${currentQuestion.correctAnswer}. -5 points`;
-                feedbackEl.className = "feedback mt-6 p-4 rounded-lg text-center font-semibold h-16 text-red-600 bg-red-100";
+                playSound('incorrect');
+                showFeedbackAnimation('incorrect');
             }
             
             updatePointsDisplay();
@@ -530,8 +634,23 @@
 
             // Load next question after a delay
             setTimeout(() => {
-                generateQuestion(currentQuestion.mode === 'input' ? currentQuestion.table : (mcqTitle.textContent === 'Mixed Quiz' ? 'random' : currentQuestion.table), currentQuestion.mode);
-            }, 1500);
+                feedbackFlash.className = 'feedback-flash'; // Hide flash
+                if (isPracticeActive) { // Check again in case user navigated away
+                    generateQuestion();
+                }
+            }, 1200);
+        }
+        
+        function showFeedbackAnimation(type) {
+            const feedbackTextEl = (currentPractice.mode === 'input') ? feedbackMessage : mcqFeedbackMessage;
+            
+            if (type === 'correct') {
+                feedbackFlash.className = 'feedback-flash active bg-green-500/30';
+                feedbackTextEl.innerHTML = `<span class="text-green-600 font-bold text-lg animate-pulse">+10 Points!</span>`;
+            } else {
+                feedbackFlash.className = 'feedback-flash active bg-red-500/30';
+                feedbackTextEl.innerHTML = `<span class="text-red-600 font-bold text-lg">-5 Points</span><br><span class="text-gray-700">Answer: ${currentQuestion.answer}</span>`;
+            }
         }
 
         // --- EVENT LISTENERS ---
@@ -539,17 +658,25 @@
         // Input practice form
         practiceForm.addEventListener('submit', (e) => {
             e.preventDefault();
+            if (answerInput.disabled) return; // Prevent double submit
             const userAnswer = parseInt(answerInput.value, 10);
             answerInput.disabled = true; // Disable input after submit
-            handleAnswer(userAnswer === currentQuestion.correctAnswer);
+            handleAnswer(userAnswer === currentQuestion.answer);
         });
         
         // MCQ answer buttons
         function handleMCQAnswer(e) {
             const userAnswer = parseInt(e.target.dataset.answer, 10);
             // Disable all buttons
-            mcqOptionsGrid.querySelectorAll('button').forEach(btn => btn.disabled = true);
-            handleAnswer(userAnswer === currentQuestion.correctAnswer);
+            mcqOptionsGrid.querySelectorAll('button').forEach(btn => {
+                btn.disabled = true;
+                if (parseInt(btn.dataset.answer, 10) === currentQuestion.answer) {
+                    btn.classList.add('bg-green-500', 'text-white'); // Show correct
+                } else if (btn === e.target) {
+                    btn.classList.add('bg-red-500', 'text-white'); // Show selected wrong
+                }
+            });
+            handleAnswer(userAnswer === currentQuestion.answer);
         }
 
         // Home screen buttons
@@ -557,33 +684,45 @@
             // Generate table buttons 2-20
             for (let i = 2; i <= 20; i++) {
                 const button = document.createElement('button');
-                button.textContent = i;
-                button.dataset.table = i;
-                button.className = "practice-btn flex items-center justify-center h-20 bg-white rounded-lg shadow-md text-indigo-600 font-bold text-2xl transition-all transform hover:scale-105 hover:bg-indigo-500 hover:text-white";
+                button.dataset.practiceTable = i;
+                button.className = "practice-btn relative flex items-center justify-center h-20 bg-white rounded-lg shadow-lg text-indigo-600 font-bold text-2xl transition-all transform hover:scale-105 active:scale-95 hover:bg-indigo-500 hover:text-white overflow-hidden";
+                button.innerHTML = `
+                    <span>${i}</span>
+                    <div class="table-btn-progress"></div>
+                `;
                 tableSelectionGrid.appendChild(button);
             }
 
-            // Add one event listener to the grid for all buttons
-            document.body.addEventListener('click', (e) => {
+            // Centralized click listener for home screen
+            document.getElementById('home-screen').addEventListener('click', (e) => {
                 const targetButton = e.target.closest('.practice-btn');
                 if (!targetButton) return;
 
-                let table, mode;
-                if (targetButton.dataset.table) {
-                    table = parseInt(targetButton.dataset.table, 10);
-                    // For specific tables, default to input, but we could add choice
-                    mode = 'input'; 
-                } else if (targetButton.dataset.mode) {
-                    table = 'random';
-                    mode = targetButton.dataset.mode.includes('mcq') ? 'mcq' : 'input';
-                } else {
-                    return;
+                if (targetButton.dataset.practiceType === 'random') {
+                    // It's a random button
+                    startPractice('random', targetButton.dataset.practiceMode);
+                } else if (targetButton.dataset.practiceTable) {
+                    // It's a table button, show the modal
+                    const table = parseInt(targetButton.dataset.practiceTable, 10);
+                    modalTitle.textContent = `Practice Table of ${table}`;
+                    modal.classList.remove('hidden');
+                    // Attach temp listeners to modal buttons
+                    modeSelectInput.onclick = () => {
+                        modal.classList.add('hidden');
+                        startPractice(table, 'input');
+                    };
+                    modeSelectMcq.onclick = () => {
+                        modal.classList.add('hidden');
+                        startPractice(table, 'mcq');
+                    };
                 }
-                
-                streak = 0; // Reset streak
-                generateQuestion(table, mode);
             });
         }
+        
+        // Modal cancel button
+        modeSelectCancel.addEventListener('click', () => {
+            modal.classList.add('hidden');
+        });
         
         // --- INITIALIZE ---
         initializeHomeScreen();
