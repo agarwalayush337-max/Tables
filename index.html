@@ -15,7 +15,6 @@
     .feedback-flash.active{opacity:1}
     .modal{position:fixed;inset:0;background:rgba(17,24,39,.75);display:flex;align-items:center;justify-content:center;padding:2rem;z-index:40}
     .modal-content{background:#fff;padding:1.25rem;border-radius:.5rem;box-shadow:0 10px 15px rgba(0,0,0,.1);width:100%;max-width:24rem}
-    .table-btn-progress{position:absolute;bottom:0;left:0;height:.25rem;background:#22c55e;border-bottom-left-radius:.5rem;border-bottom-right-radius:.5rem;transition:width .3s}
     .question-text{animation:pop .15s ease-out}
     @keyframes pop{from{transform:scale(.9);opacity:0}to{transform:scale(1);opacity:1}}
     .countdown{font-weight:900;color:#dc2626;text-align:center;letter-spacing:.03em;font-size:2.25rem}
@@ -27,7 +26,7 @@
 
   <div id="feedback-flash" class="feedback-flash"></div>
 
-  <div class="pb-20">
+  <div class="pb-24">
     <!-- Header -->
     <header class="sticky top-0 bg-white shadow z-10 p-4">
       <div class="max-w-lg mx-auto flex justify-between items-center">
@@ -92,10 +91,17 @@
       </div>
     </section>
 
-    <!-- STATS -->
+    <!-- STATS (REORDERED) -->
     <section id="stats-screen" class="page p-4 sm:p-6 max-w-lg mx-auto">
+      <!-- 1) OVERVIEW -->
       <div class="bg-white p-6 rounded-lg shadow mb-6">
-        <h2 class="text-2xl font-bold text-gray-800 mb-4">Overview</h2>
+        <div class="flex items-center justify-between mb-2">
+          <h2 class="text-2xl font-bold text-gray-800">Overview</h2>
+          <div class="flex items-center gap-2">
+            <button id="btn-export" class="px-3 py-1.5 text-sm border rounded hover:bg-gray-50">Export CSV</button>
+            <button id="btn-reset" class="px-3 py-1.5 text-sm border rounded text-red-600 hover:bg-red-50">Reset Stats</button>
+          </div>
+        </div>
         <div class="grid grid-cols-2 gap-4 text-center">
           <div class="p-4 border rounded-lg">
             <div id="stats-best-score" class="text-4xl font-bold text-yellow-500">0</div>
@@ -104,6 +110,14 @@
           <div class="p-4 border rounded-lg">
             <div id="stats-tables-practiced" class="text-4xl font-bold text-indigo-600">0</div>
             <div class="text-sm text-gray-600">Tables Practiced</div>
+          </div>
+          <div class="p-4 border rounded-lg">
+            <div id="stats-avg-time" class="text-3xl font-bold text-indigo-600">—</div>
+            <div class="text-sm text-gray-600">Avg Answer Time (correct)</div>
+          </div>
+          <div class="p-4 border rounded-lg">
+            <div id="stats-timeouts" class="text-3xl font-bold text-red-600">0</div>
+            <div class="text-sm text-gray-600">Timeouts</div>
           </div>
           <div class="p-4 border rounded-lg col-span-2">
             <div class="text-gray-600 text-sm mb-1">Overall Accuracy</div>
@@ -114,22 +128,40 @@
           </div>
         </div>
       </div>
+
+      <!-- 2) TOP MISTAKES -->
       <div class="bg-white p-6 rounded-lg shadow mb-6">
-        <h3 class="text-xl font-bold text-gray-800 mb-4">Time Spent (Last 7 Days)</h3>
-        <div id="stats-time-report" class="space-y-2">
-          <p class="text-gray-500 text-center">Practice to see your time report!</p>
+        <h3 class="text-xl font-bold text-gray-800 mb-4">Top Mistakes</h3>
+        <div id="stats-top-mistakes" class="space-y-2">
+          <p class="text-gray-500 text-center">No mistakes yet—nice!</p>
         </div>
       </div>
+
+      <!-- 3) LAST 10 SCORES -->
       <div class="bg-white p-6 rounded-lg shadow mb-6">
-        <h3 class="text-xl font-bold text-gray-800 mb-4">Accuracy per Table</h3>
-        <div id="stats-per-table-list" class="space-y-4">
-          <p class="text-gray-500 text-center">Practice a table to see your stats here!</p>
-        </div>
-      </div>
-      <div class="bg-white p-6 rounded-lg shadow">
         <h3 class="text-xl font-bold text-gray-800 mb-4">Last 10 Scores</h3>
         <div id="stats-last-scores" class="space-y-2">
           <p class="text-gray-500 text-center">No scores yet—start a quiz!</p>
+        </div>
+      </div>
+
+      <!-- 4) TREND -->
+      <div class="bg-white p-6 rounded-lg shadow mb-6">
+        <h3 class="text-xl font-bold text-gray-800 mb-4">Trend (Last 7 Days)</h3>
+        <div id="stats-trend" class="space-y-1"></div>
+      </div>
+
+      <!-- 5) ACCURACY BY MULTIPLIER -->
+      <div class="bg-white p-6 rounded-lg shadow mb-6">
+        <h3 class="text-xl font-bold text-gray-800 mb-4">Accuracy by Multiplier (×2–×10)</h3>
+        <div id="stats-by-mult" class="space-y-2"></div>
+      </div>
+
+      <!-- 6) ACCURACY BY TABLE -->
+      <div class="bg-white p-6 rounded-lg shadow">
+        <h3 class="text-xl font-bold text-gray-800 mb-4">Accuracy by Table (with Avg Time)</h3>
+        <div id="stats-per-table-list" class="space-y-3">
+          <p class="text-gray-500 text-center">Practice a table to see your stats here!</p>
         </div>
       </div>
     </section>
@@ -177,12 +209,12 @@
       osc.start(); osc.stop(audioCtx.currentTime+0.3);
     }
 
-    // ----- State
-    let globalStats = { bestScore: 0, tables: {}, timeLog: {}, lastScores: [] };
+    // ----- State (with qlog)
+    let globalStats = { bestScore: 0, tables: {}, timeLog: {}, lastScores: [], qlog: [] };
     let currentPractice = { table: null, mode: 'input', score: 0 };
     let currentQuestion = { num1: 0, num2: 0, answer: 0 };
     let isPracticeActive = false;
-    let questionTimer; let sessionStartTime;
+    let questionTimer; let sessionStartTime; let qStartAt = 0;
 
     // ----- Elements
     const pages = document.querySelectorAll('.page');
@@ -217,15 +249,21 @@
     const statsBestScore = document.getElementById('stats-best-score');
     const statsTablesPracticed = document.getElementById('stats-tables-practiced');
     const statsPerTableList = document.getElementById('stats-per-table-list');
-    const statsTimeReport = document.getElementById('stats-time-report');
     const statsAccuracyBar = document.getElementById('stats-accuracy-bar');
     const statsAccuracyText = document.getElementById('stats-accuracy-text');
     const statsLastScores = document.getElementById('stats-last-scores');
+    const statsAvgTime = document.getElementById('stats-avg-time');
+    const statsTimeouts = document.getElementById('stats-timeouts');
+    const statsByMult = document.getElementById('stats-by-mult');
+    const statsTrend = document.getElementById('stats-trend');
+    const statsTopMistakes = document.getElementById('stats-top-mistakes');
+    const btnExport = document.getElementById('btn-export');
+    const btnReset = document.getElementById('btn-reset');
 
     // ----- Helpers
     const pad2 = n => String(n).padStart(2,'0');
     const todayStr = () => new Date().toISOString().split('T')[0];
-
+    const msToSec = ms => (ms/1000).toFixed(2)+'s';
     function showView(viewId){
       pages.forEach(p=>p.classList.remove('active'));
       const t = document.getElementById(viewId);
@@ -246,7 +284,8 @@
           bestScore: j.bestScore||0,
           tables: j.tables||{},
           timeLog: j.timeLog||{},
-          lastScores: j.lastScores||[]
+          lastScores: j.lastScores||[],
+          qlog: j.qlog||[]
         };
       }catch(e){ console.warn(e); }
     }
@@ -255,15 +294,100 @@
     }
     function updateBestScoreDisplay(){ bestScoreValue.textContent = globalStats.bestScore||0; }
 
-    // ----- Stats rendering
+    // ----- Analytics logging
+    function logQuestionEvent({n1, n2, correct, given, outcome, ms}) {
+      globalStats.qlog = globalStats.qlog || [];
+      globalStats.qlog.unshift({ts: Date.now(), n1, n2, correct, given, outcome, ms});
+      if (globalStats.qlog.length > 1000) globalStats.qlog.pop();
+    }
+    function finishQuestion(outcome, givenVal){
+      const ms = Math.max(0, performance.now() - qStartAt);
+      logQuestionEvent({
+        n1: currentQuestion.num1,
+        n2: currentQuestion.num2,
+        correct: currentQuestion.answer,
+        given: givenVal,
+        outcome,
+        ms
+      });
+    }
+
+    // ----- Stats computations
+    function overallAccuracy(){
+      const qs = globalStats.qlog||[];
+      const correct = qs.filter(q=>q.outcome==='correct').length;
+      const wrong   = qs.filter(q=>q.outcome==='wrong').length;
+      const tot = correct + wrong;
+      return {pct: tot? Math.round(correct/tot*100):0, c: correct, tot};
+    }
+    function avgMs(filterFn = ()=>true) {
+      const xs = (globalStats.qlog||[]).filter(q => q.outcome==='correct' && filterFn(q)).map(q=>q.ms);
+      return xs.length ? Math.round(xs.reduce((a,b)=>a+b,0)/xs.length) : null;
+    }
+    function timeoutStats() {
+      const qs = globalStats.qlog||[];
+      const t = qs.filter(q=>q.outcome==='timeout').length;
+      return { count: t, pct: qs.length ? Math.round((t/qs.length)*100) : 0 };
+    }
+    function accByMultiplier() {
+      const out = {}; for (let m=2; m<=10; m++) out[m]={c:0,i:0};
+      (globalStats.qlog||[]).forEach(q=>{
+        const m = q.n2;
+        if(m>=2 && m<=10){
+          if(q.outcome==='correct') out[m].c++; else if(q.outcome==='wrong') out[m].i++;
+        }
+      });
+      return Object.fromEntries(Object.entries(out).map(([m,{c,i}])=>{
+        const tot=c+i; return [m, {acc: tot? Math.round(c/tot*100):0, c, i, tot}];
+      }));
+    }
+    function perTableStats(){
+      const map = {};
+      (globalStats.qlog||[]).forEach(q=>{
+        const k = q.n1;
+        map[k] = map[k] || {c:0,i:0,times:[]};
+        if(q.outcome==='correct'){ map[k].c++; map[k].times.push(q.ms); }
+        else if(q.outcome==='wrong'){ map[k].i++; }
+      });
+      const res = {};
+      Object.keys(map).forEach(k=>{
+        const {c,i,times} = map[k];
+        const tot=c+i;
+        const acc = tot? Math.round(c/tot*100) : 0;
+        const avg = times.length? Math.round(times.reduce((a,b)=>a+b,0)/times.length) : null;
+        res[k] = {acc, c, i, tot, avg};
+      });
+      return res;
+    }
+    function topMistakes(limit=5) {
+      const m = new Map();
+      (globalStats.qlog||[]).forEach(q=>{
+        if(q.outcome==='wrong'){
+          const key = `${q.n1}×${q.n2}`;
+          m.set(key, (m.get(key)||0)+1);
+        }
+      });
+      return [...m.entries()].sort((a,b)=>b[1]-a[1]).slice(0,limit);
+    }
+    function trend7Days(){
+      const days = [];
+      for(let i=6;i>=0;i--){ const d=new Date(); d.setDate(d.getDate()-i); days.push(d.toISOString().split('T')[0]); }
+      const buckets = {}; days.forEach(ds=> buckets[ds] = {c:0,i:0});
+      (globalStats.qlog||[]).forEach(q=>{
+        const ds = new Date(q.ts).toISOString().split('T')[0];
+        if(buckets[ds]){ if(q.outcome==='correct') buckets[ds].c++; else if(q.outcome==='wrong') buckets[ds].i++; }
+      });
+      return days.map(ds=>{
+        const {c,i} = buckets[ds]; const tot=c+i; const acc = tot? Math.round(c/tot*100):0;
+        return {date: ds, acc, tot};
+      });
+    }
+
+    // ----- Render Stats
     function formatTime(secs){
       if (secs < 60) return `${Math.round(secs)}s`;
       const m = Math.floor(secs/60), s = Math.round(secs%60);
       return s? `${m}m ${s}s` : `${m}m`;
-    }
-    function overallAccuracy(){
-      let c=0,i=0; Object.values(globalStats.tables).forEach(t=>{c+=t.correct||0;i+=t.incorrect||0;});
-      const tot=c+i; return {pct: tot? Math.round(c/tot*100):0, c, tot};
     }
     function renderStatsPage(){
       statsBestScore.textContent = globalStats.bestScore||0;
@@ -271,50 +395,69 @@
       statsAccuracyBar.style.width = pct+'%';
       statsAccuracyText.textContent = `${pct}% (${c}/${tot})`;
 
-      const practiced = Object.entries(globalStats.tables)
-        .filter(([,d]) => (d.correct||0)+(d.incorrect||0) > 0)
+      const practiced = Object.entries(perTableStats())
+        .filter(([,d]) => (d.tot||0) > 0)
         .map(([k]) => Number(k)).sort((a,b)=>a-b);
       statsTablesPracticed.textContent = practiced.length;
 
-      statsTimeReport.innerHTML='';
-      let hasTime=false;
-      for(let i=0;i<7;i++){
-        const d=new Date(); d.setDate(d.getDate()-i);
-        const ds=d.toISOString().split('T')[0];
-        const t=globalStats.timeLog[ds]||0;
-        if (t>0) hasTime=true;
-        const label = i===0?'Today':i===1?'Yesterday':d.toLocaleDateString(undefined,{weekday:'long'});
-        statsTimeReport.innerHTML += `<div class="flex justify-between text-sm ${i===0?'font-bold':''}">
-          <span class="text-gray-600">${label}</span><span class="text-gray-800">${formatTime(t)}</span></div>`;
-      }
-      if(!hasTime) statsTimeReport.innerHTML = `<p class="text-gray-500 text-center">Practice to see your time report!</p>`;
+      const avgOverall = avgMs();
+      statsAvgTime.textContent = avgOverall!=null ? msToSec(avgOverall) : '—';
 
-      if(practiced.length===0){
-        statsPerTableList.innerHTML=`<p class="text-gray-500 text-center">Practice a table to see your stats here!</p>`;
-      }else{
-        statsPerTableList.innerHTML='';
-        practiced.forEach(n=>{
-          const d=globalStats.tables[n]||{correct:0,incorrect:0};
-          const tot=(d.correct||0)+(d.incorrect||0);
-          const acc=tot? Math.round((d.correct/tot)*100):0;
-          const color = acc>=80?'text-green-600':acc>=50?'text-yellow-600':'text-red-600';
-          statsPerTableList.innerHTML += `
-            <div class="border border-gray-200 p-4 rounded-lg">
-              <div class="flex justify-between items-center mb-2">
-                <span class="font-bold text-lg text-indigo-600">Table of ${n}</span>
-                <span class="font-bold text-lg ${color}">${acc}% Acc</span>
+      const to = timeoutStats();
+      statsTimeouts.textContent = to.count;
+
+      const T = trend7Days();
+      statsTrend.innerHTML = T.map(row=>{
+        const d = new Date(row.date);
+        const label = d.toLocaleDateString(undefined,{weekday:'short', month:'short', day:'numeric'});
+        return `<div class="flex items-center justify-between text-sm">
+          <span class="text-gray-600">${label}</span>
+          <span class="text-gray-800 font-semibold">${row.acc}%</span>
+          <span class="text-gray-500">${row.tot} q</span>
+        </div>`;
+      }).join('') || `<p class="text-gray-500 text-center">No data yet.</p>`;
+
+      const mult = accByMultiplier();
+      statsByMult.innerHTML = Object.entries(mult).map(([m,v]) => `
+        <div class="flex justify-between items-center border rounded-lg p-2">
+          <div class="font-semibold">×${m}</div>
+          <div class="text-sm text-gray-600">Acc: <span class="font-bold">${v.acc}%</span> • ${v.tot} attempts</div>
+        </div>
+      `).join('');
+
+      const tableStats = perTableStats();
+      if(Object.keys(tableStats).length===0){
+        statsPerTableList.innerHTML = `<p class="text-gray-500 text-center">Practice a table to see your stats here!</p>`;
+      } else {
+        statsPerTableList.innerHTML = Object.keys(tableStats).sort((a,b)=>a-b).map(k=>{
+          const d = tableStats[k];
+          const color = d.acc>=80?'text-green-600':d.acc>=50?'text-yellow-600':'text-red-600';
+          return `
+            <div class="border border-gray-200 p-3 rounded-lg">
+              <div class="flex justify-between items-center">
+                <span class="font-bold text-lg text-indigo-600">Table of ${k}</span>
+                <span class="font-bold ${color}">${d.acc}% Acc</span>
               </div>
-              <div class="flex justify-between text-sm text-gray-600">
-                <span>Correct: <span class="font-medium text-green-700">${d.correct||0}</span></span>
-                <span>Incorrect: <span class="font-medium text-red-700">${d.incorrect||0}</span></span>
-                <span>Total: <span class="font-medium text-gray-800">${tot}</span></span>
+              <div class="flex justify-between text-sm text-gray-600 mt-1">
+                <span>Correct: <span class="font-medium text-green-700">${d.c}</span></span>
+                <span>Incorrect: <span class="font-medium text-red-700">${d.i}</span></span>
+                <span>Total: <span class="font-medium text-gray-800">${d.tot}</span></span>
+                <span>Avg Time: <span class="font-medium text-gray-800">${d.avg!=null? msToSec(d.avg):'—'}</span></span>
               </div>
               <div class="w-full bg-gray-200 rounded-full h-2.5 mt-2">
-                <div class="h-2.5 rounded-full" style="background:#22c55e;width:${acc}%"></div>
+                <div class="h-2.5 rounded-full" style="background:#22c55e;width:${d.acc}%"></div>
               </div>
             </div>`;
-        });
+        }).join('');
       }
+
+      const tm = topMistakes(5);
+      statsTopMistakes.innerHTML = tm.length ? tm.map(([k,cnt])=>`
+        <div class="flex justify-between border rounded-lg p-2">
+          <span class="font-semibold">${k}</span>
+          <span class="text-sm text-gray-600">${cnt} misses</span>
+        </div>
+      `).join('') : `<p class="text-gray-500 text-center">No mistakes yet—nice!</p>`;
 
       if(!globalStats.lastScores.length){
         statsLastScores.innerHTML = `<p class="text-gray-500 text-center">No scores yet—start a quiz!</p>`;
@@ -345,14 +488,15 @@
       }
     }
 
-    // ----- Dynamic difficulty (time only; multiplier fixed to 2..10)
-    function getMultiplierRange() { return [2, 10]; } // STRICT cap
+    // ----- Dynamic timer (score-based)
     function timePerQuestion() {
       const s = currentPractice.score;
       if (s >= 150) return 7;
       if (s >= 80)  return 8;
       return 10;
     }
+    // Multipliers 2..10
+    function getMultiplierRange() { return [2, 10]; }
 
     // ----- Practice core
     function startPractice(table, mode){
@@ -362,7 +506,6 @@
       generateQuestion();
       showView(mode==='mcq' ? 'mcq-screen' : 'practice-screen');
     }
-
     function stopPractice(recordEnd=true, reason='manual'){
       if(!isPracticeActive) return;
       clearInterval(questionTimer);
@@ -374,7 +517,6 @@
       sessionStartTime=null;
       saveStatsToLocal();
     }
-
     function generateQuestion(){
       if(!isPracticeActive) return;
 
@@ -385,8 +527,10 @@
 
       const n1 = currentPractice.table==='random' ? (Math.floor(Math.random()*19)+2) : currentPractice.table;
       const [min,max]=getMultiplierRange();
-      const n2 = Math.floor(Math.random()*(max-min+1))+min; // ALWAYS 2..10
+      const n2 = Math.floor(Math.random()*(max-min+1))+min; // 2..10
       currentQuestion = { num1:n1, num2:n2, answer:n1*n2 };
+
+      qStartAt = performance.now();
 
       const qHTML = `<span class="question-text">${n1} × ${n2} = ?</span>`;
       const title  = currentPractice.table==='random' ? 'Mixed Quiz' : `Table of ${n1}`;
@@ -396,7 +540,7 @@
         practiceScore.textContent = `Score: ${currentPractice.score}`;
         practiceQuestion.innerHTML = qHTML;
         answerInput.value=''; answerInput.disabled=false; answerInput.focus();
-        startCountdown(practiceCountdown, ()=>processAnswer(false,true), timePerQuestion());
+        startCountdown(practiceCountdown, ()=>{ finishQuestion('timeout', null); processAnswer(false,true); }, timePerQuestion());
       }else{
         mcqTitle.textContent = title;
         mcqScore.textContent = `Score: ${currentPractice.score}`;
@@ -414,7 +558,7 @@
           mcqOptionsGrid.appendChild(btn);
         });
 
-        startCountdown(mcqCountdown, ()=>processAnswer(false,true), timePerQuestion());
+        startCountdown(mcqCountdown, ()=>{ finishQuestion('timeout', null); processAnswer(false,true); }, timePerQuestion());
       }
     }
 
@@ -452,12 +596,12 @@
 
       const pool = new Set();
 
-      // adjacent multipliers (capped to 2..10)
+      // adjacent multipliers (capped 2..10)
       const m1 = Math.max(2, Math.min(10, n2 - 1));
       const m2 = Math.max(2, Math.min(10, n2 + 1));
       pool.add(n1 * m1); pool.add(n1 * m2);
 
-      // adjacent tables ((n1 ± 1) × n2), keep n1 in 2..20
+      // adjacent tables ((n1 ± 1) × n2)
       const t1 = Math.max(2, Math.min(20, n1 - 1));
       const t2 = Math.max(2, Math.min(20, n1 + 1));
       pool.add(t1 * n2); pool.add(t2 * n2);
@@ -466,14 +610,16 @@
       if (correct - n1 > 0) pool.add(correct - n1); pool.add(correct + n1);
       if (correct - n2 > 0) pool.add(correct - n2); pool.add(correct + n2);
 
-      // ±10 only to keep magnitude realistic
-      [10].forEach(step => { if (correct - step > 0) pool.add(correct - step); pool.add(correct + step); });
+      // ±10 near the true value
+      if (correct - 10 > 0) pool.add(correct - 10);
+      pool.add(correct + 10);
 
+      // small near-misses
       for (let k = 1; k <= 6; k++) { if (correct - k > 0) pool.add(correct - k); pool.add(correct + k); }
 
       pool.delete(correct);
 
-      // align many candidates to share the same units digit
+      // force many candidates to share correct unit digit
       const sameUnit = [];
       for (const v of pool) {
         const adj = adjustToUnit(v, unit);
@@ -517,6 +663,7 @@
         if(v===currentQuestion.answer){ b.classList.add('bg-green-500','text-white'); }
         else if(b===btn){ b.classList.add('bg-red-500','text-white'); }
       });
+      finishQuestion(val===currentQuestion.answer ? 'correct' : 'wrong', val);
       processAnswer(val===currentQuestion.answer);
     }
 
@@ -555,7 +702,6 @@
       }
       saveStatsToLocal();
     }
-
     function pushScoreRecord(reason){
       if(!sessionStartTime) return;
       const duration=Math.max(0,(Date.now()-sessionStartTime.getTime())/1000);
@@ -564,7 +710,29 @@
       saveStatsToLocal();
     }
 
-    // ----- Events
+    // ----- Export / Reset
+    function exportCSV() {
+      const rows = (globalStats.qlog||[]).map(q=>[
+        new Date(q.ts).toISOString(), q.n1, q.n2, q.correct, q.given??'', q.outcome, Math.round(q.ms)
+      ]);
+      const header = ['timestamp','n1','n2','correct','given','outcome','ms'];
+      const csv = [header, ...rows].map(r=>r.join(',')).join('\n');
+      const a = document.createElement('a');
+      a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+      a.download = 'tables-ace-questions.csv';
+      a.click();
+    }
+    btnExport.addEventListener('click', exportCSV);
+    btnReset.addEventListener('click', ()=>{
+      if(!confirm('Reset all stats? This clears scores, logs, and best score.')) return;
+      globalStats = { bestScore: 0, tables: {}, timeLog: {}, lastScores: [], qlog: [] };
+      saveStatsToLocal();
+      updateBestScoreDisplay();
+      renderStatsPage();
+      alert('Stats have been reset.');
+    });
+
+    // ----- Nav
     document.getElementById('nav-home').onclick=()=>{ stopPractice(false); showView('home-screen'); };
     document.getElementById('nav-stats').onclick=()=>{ stopPractice(false); renderStatsPage(); showView('stats-screen'); };
     document.getElementById('nav-tips').onclick=()=>{ stopPractice(false); renderStatsPage(); showView('stats-screen'); };
@@ -572,18 +740,18 @@
     document.getElementById('btn-mixed-mcq').onclick=()=> startPractice('random','mcq');
     document.getElementById('btn-mixed-input').onclick=()=> startPractice('random','input');
 
+    // Table buttons
     function addTableButtons(){
       for(let i=2;i<=20;i++){
         const b=document.createElement('button');
         b.type='button';
         b.dataset.practiceTable=i;
         b.className="relative flex items-center justify-center h-20 bg-white rounded-lg shadow text-indigo-600 font-bold text-2xl hover:scale-105 transition overflow-hidden";
-        b.innerHTML=`<span>${i}</span><div class="table-btn-progress"></div>`;
+        b.innerHTML=`<span>${i}</span>`;
         b.onclick=()=> openModeSelector(i);
         tableSelectionGrid.appendChild(b);
       }
     }
-
     function openModeSelector(table){
       modalTitle.textContent=`Practice Table of ${table}`;
       modal.classList.remove('hidden');
@@ -592,15 +760,17 @@
     }
     modeSelectCancel.onclick=()=> modal.classList.add('hidden');
 
+    // Input form
     practiceForm.addEventListener('submit', (e)=>{
       e.preventDefault();
       if(!isPracticeActive) return;
       const ans=parseInt(answerInput.value,10);
       answerInput.disabled=true;
+      finishQuestion(ans===currentQuestion.answer ? 'correct' : 'wrong', ans);
       processAnswer(ans===currentQuestion.answer);
     });
 
-    // ----- Init
+    // Init
     (function init(){
       loadStatsFromLocal();
       updateBestScoreDisplay();
